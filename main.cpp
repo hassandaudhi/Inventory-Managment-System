@@ -127,11 +127,12 @@ void AddInventoryItem(inventory_item it)
            
  }
  
-  void DeleteInventoryItem(inventory_item it)
+ 
+ void DeleteInventoryItem(inventory_item it)
 {		
   
-        ifstream inventory("Inventory.txt", ios::binary );
-		ofstream newone("temp.txt", ios::binary | ios::app);        
+        fstream inventory("Inventory.txt", ios::in | ios::binary );
+		fstream temp("temp.txt", ios::in | ios::binary |ios::out |ios::app);        
         inventory.read(reinterpret_cast<char *>(&it),sizeof(it)); 
         int id;
         bool flag=0;
@@ -140,35 +141,36 @@ void AddInventoryItem(inventory_item it)
 		
 		while (!inventory.eof()) 
 			{ 
-                if (id!=it.item_ID)
-                    newone.write(reinterpret_cast<char *>(&it), sizeof(it));
-                else
-                {
-                    flag = 1;
-
-                }
-
+ 				if(id==it.item_ID)
+ 				{
+ 				cout << "The Item is deleted" << endl;
+				flag=1;
+				}
 				inventory.read(reinterpret_cast<char *>(&it),sizeof(it)); 
             }
-
-                if (flag)
-                cout << "Item is deleted!\n";
-                else
-                    cout << "No item Found!!!!!\n";
-
-
-            inventory.close();
-            newone.close();
-            remove("Inventory.txt");
-            rename("temp.txt", "Inventory.txt");
             
+            
+            if(flag==1)
+            {
+            	if(id!=it.item_ID)
+					{
+						temp.write(reinterpret_cast<char *>(&it),sizeof(it));
+					}
+			}
+            
+        
+        
+        
+        inventory.close(); 
+        temp.close();
+        
+        remove("Inventory.txt");
+        rename("temp.txt","Inventory.txt");
  }
 
-
-
  void AssignInventoryItem(inventory_item it)
- {      
-        fstream inventory("Inventory.txt", ios::in | ios::binary);
+ {      int count=0;
+        fstream inventory("Inventory.txt", ios::in |ios::out| ios::binary);
         inventory.read(reinterpret_cast<char *>(&it),sizeof(it)); 
         int itemID;
         char name[20] ;
@@ -182,16 +184,19 @@ void AddInventoryItem(inventory_item it)
  				if(itemID==it.item_ID)
  				{
  				it.item_count--;
- 				cout << "Enter name: ";
- 				cin.getline(it.allocated_to[i], 20);
-				cout<<"The item "<<it.name<<" is allocated to " << name << endl ;
-				
+                strcpy(it.allocated_to[count],name);
+                long situation = sizeof (it);
+                inventory.seekg(-situation , ios::cur );
+                inventory.write(reinterpret_cast<char *>(&it),sizeof(it));
 				}
 				inventory.read(reinterpret_cast<char *>(&it),sizeof(it)); 
             }
-			
+            
+            count++;
         
  }
+ 
+ 
  
 int main()
 {   
